@@ -1,0 +1,32 @@
+name: publish-docker
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  HUB: ghcr.io/arugal/gh-oauth-server
+
+jobs:
+  build:
+    if: github.repository == 'arugal/gh-oauth-server'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 90
+    env:
+      TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout source codes
+        uses: actions/checkout@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1.10.0
+        with:
+          registry: ${{ env.HUB }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build docker image
+        run: |
+          make docker.push || make docker.push
